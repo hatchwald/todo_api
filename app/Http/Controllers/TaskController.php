@@ -86,6 +86,10 @@ class TaskController extends Controller
             }
             $task->title = $request->title;
             $task->summary = $request->summary;
+            if ($request->status) {
+                $task->status = $request->status;
+            }
+
             $task->save();
             DB::commit();
         } catch (\Throwable $th) {
