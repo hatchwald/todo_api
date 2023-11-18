@@ -14,7 +14,8 @@ class TaskController extends Controller
      */
     public function index()
     {
-        return "well";
+        $data = Task::all();
+        return response()->json(['message' => 'all data Task', 'original_code' => 200, 'data' => $data], 200);
     }
 
     /**
@@ -33,7 +34,7 @@ class TaskController extends Controller
             DB::beginTransaction();
             $validated = Validator::make($request->all(), [
                 'title' => 'required',
-
+                'summary' => 'required'
             ]);
 
             if ($validated->fails()) {
@@ -57,7 +58,7 @@ class TaskController extends Controller
      */
     public function show(Task $task)
     {
-        //
+        return response()->json(['message' => 'data below', 'data' => $task]);
     }
 
     /**
@@ -73,7 +74,26 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        //
+        try {
+            DB::beginTransaction();
+            $validated = Validator::make($request->all(), [
+                'title' => 'required',
+                'summary' => 'required'
+            ]);
+
+            if ($validated->fails()) {
+                return response()->json(['error' => $validated->getMessageBag()], 500);
+            }
+            $task->title = $request->title;
+            $task->summary = $request->summary;
+            $task->save();
+            DB::commit();
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json(['message' => $th->getMessage()], 500);
+        }
+
+        return response()->json(['message' => 'success update data Task', 'original_code' => 200, 'data' => $task], 200);
     }
 
     /**
@@ -81,6 +101,15 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        try {
+            DB::beginTransaction();
+            $task->delete();
+            DB::commit();
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json(['message' => $th->getMessage()], 500);
+        }
+
+        return response()->json(['message' => 'success deleted data Task', 'original_code' => 200, 'data' => $task], 200);
     }
 }
