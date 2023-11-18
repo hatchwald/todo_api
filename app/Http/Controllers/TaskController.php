@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
@@ -12,7 +14,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        //
+        return "well";
     }
 
     /**
@@ -20,7 +22,6 @@ class TaskController extends Controller
      */
     public function create()
     {
-        //
     }
 
     /**
@@ -28,7 +29,27 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            DB::beginTransaction();
+            $validated = Validator::make($request->all(), [
+                'title' => 'required',
+
+            ]);
+
+            if ($validated->fails()) {
+                return response()->json(['error' => $validated->getMessageBag()], 500);
+            }
+            $data = Task::create([
+                'title' => $request->title,
+                'summary' => $request->summary
+            ]);
+            DB::commit();
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json(['message' => $th->getMessage()], 500);
+        }
+
+        return response()->json(['message' => 'success created data Task', 'original_code' => 200, 'data' => $data], 200);
     }
 
     /**
